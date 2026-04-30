@@ -542,7 +542,7 @@ function renderCategories() {
         <button class="btn-delete-cat" data-id="${cat.id}">✕</button>
       </div>
       <div class="cat-budget-label">Budget mensuel</div>
-      <div class="cat-budget-amount">${cat.budget_limit ? fmt(cat.budget_limit) : '—'}</div>
+      <div class="cat-budget-amount">${cat.budget_limit != null ? fmt(cat.budget_limit) : '—'}</div>
     `;
     card.addEventListener('click', (e) => {
       if (e.target.closest('.btn-delete-cat')) return;
