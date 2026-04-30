@@ -581,7 +581,7 @@ async function renderHistory() {
   const { data } = await sb.from('expenses')
     .select('*').eq('user_id', currentUser.id).order('date');
   const { dataIncome } = await sb.from('incomes')
-    .select('*').eq('user_id', currentUser.id).order('date');
+    .select('*').eq('user_id', currentUser.id).order('date') || [];
   if (!data?.length) {
     histEl.innerHTML = '<p class="empty-state"><span class="empty-icon">📅</span>Aucun historique disponible</p>';
     return;
