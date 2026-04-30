@@ -6,24 +6,24 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── STATE ────────────────────────────────────────────────────
-let currentUser     = null;
-let categories      = [];
-let viewMonth       = new Date();
+let currentUser = null;
+let categories = [];
+let viewMonth = new Date();
 viewMonth.setDate(1);
-let appInitialized  = false;
-let expectedSalary  = 0;
-let selectedColor   = '#d4a853';
+let appInitialized = false;
+let expectedSalary = 0;
+let selectedColor = '#d4a853';
 let editingCategoryId = null;
-let incomeType      = 'income'; // 'income' | 'reimbursement'
+let incomeType = 'income'; // 'income' | 'reimbursement'
 
 const COLORS = [
-  '#d4a853','#e05c5c','#4ecb7b','#5b9cf6',
-  '#9b72f5','#f97316','#06b6d4','#ec4899',
-  '#a3e635','#fb923c','#f43f5e','#8b5cf6'
+  '#d4a853', '#e05c5c', '#4ecb7b', '#5b9cf6',
+  '#9b72f5', '#f97316', '#06b6d4', '#ec4899',
+  '#a3e635', '#fb923c', '#f43f5e', '#8b5cf6'
 ];
 
-const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
-                   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MONTHS_FR = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 // ── TOAST ────────────────────────────────────────────────────
 let toastTimer;
@@ -89,7 +89,7 @@ function showScreen(name) {
 // ── INIT ─────────────────────────────────────────────────────
 async function initApp() {
   const meta = currentUser.user_metadata;
-  document.getElementById('user-name').textContent  = meta.full_name || meta.name || 'Utilisateur';
+  document.getElementById('user-name').textContent = meta.full_name || meta.name || 'Utilisateur';
   document.getElementById('user-email').textContent = currentUser.email || '';
   const avatar = document.getElementById('user-avatar');
   if (meta.avatar_url || meta.picture) {
@@ -143,7 +143,7 @@ function monthRange(date) {
   const y = date.getFullYear(), m = date.getMonth();
   return {
     from: new Date(y, m, 1).toISOString().slice(0, 10),
-    to:   new Date(y, m + 1, 0).toISOString().slice(0, 10)
+    to: new Date(y, m + 1, 0).toISOString().slice(0, 10)
   };
 }
 
@@ -173,13 +173,13 @@ async function seedDefaultCategories() {
   if (count > 0) return;
 
   const defaults = [
-    { name: 'Logement',     color: '#5b9cf6', budget_limit: 800 },
+    { name: 'Logement', color: '#5b9cf6', budget_limit: 800 },
     { name: 'Alimentation', color: '#4ecb7b', budget_limit: 400 },
-    { name: 'Transport',    color: '#d4a853', budget_limit: 150 },
-    { name: 'Loisirs',      color: '#9b72f5', budget_limit: 100 },
-    { name: 'Santé',        color: '#06b6d4', budget_limit: 50  },
-    { name: 'Abonnements',  color: '#f97316', budget_limit: 80  },
-    { name: 'Inconnu',      color: '#4a4e63', budget_limit: 0   },
+    { name: 'Transport', color: '#d4a853', budget_limit: 150 },
+    { name: 'Loisirs', color: '#9b72f5', budget_limit: 100 },
+    { name: 'Santé', color: '#06b6d4', budget_limit: 50 },
+    { name: 'Abonnements', color: '#f97316', budget_limit: 80 },
+    { name: 'Inconnu', color: '#4a4e63', budget_limit: 0 },
   ];
   await sb.from('categories').insert(defaults.map(d => ({ ...d, user_id: currentUser.id })));
   await loadCategories();
@@ -194,11 +194,11 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(`view-${view}`).classList.add('active');
     closeSidebar();
-    if (view === 'dashboard')  renderDashboard();
-    if (view === 'expenses')   { renderExpenseList(); populateCategorySelects(); }
-    if (view === 'incomes')    { renderIncomesList(); populateCategorySelects(); }
+    if (view === 'dashboard') renderDashboard();
+    if (view === 'expenses') { renderExpenseList(); populateCategorySelects(); }
+    if (view === 'incomes') { renderIncomesList(); populateCategorySelects(); }
     if (view === 'categories') renderCategories();
-    if (view === 'history')    renderHistory();
+    if (view === 'history') renderHistory();
   });
 });
 
@@ -229,21 +229,21 @@ async function renderDashboard() {
     getIncomesForMonth(viewMonth)
   ]);
 
-  const incomes       = allIncomes.filter(i => i.type === 'income' || !i.type);
+  const incomes = allIncomes.filter(i => i.type === 'income' || !i.type);
   const reimbursements = allIncomes.filter(i => i.type === 'reimbursement');
 
-  const totalGross    = expenses.reduce((a, e) => a + e.amount, 0);
-  const totalReimb    = reimbursements.reduce((a, i) => a + i.amount, 0);
-  const totalNet      = Math.max(0, totalGross - totalReimb);
-  const totalIncomes  = incomes.reduce((a, i) => a + i.amount, 0);
-  const totalBudget   = categories.reduce((a, c) => a + (c.budget_limit || 0), 0);
+  const totalGross = expenses.reduce((a, e) => a + e.amount, 0);
+  const totalReimb = reimbursements.reduce((a, i) => a + i.amount, 0);
+  const totalNet = Math.max(0, totalGross - totalReimb);
+  const totalIncomes = incomes.reduce((a, i) => a + i.amount, 0);
+  const totalBudget = categories.reduce((a, c) => a + (c.budget_limit || 0), 0);
 
   const savingsExpected = expectedSalary - totalBudget;
-  const savingsReal     = totalIncomes - totalNet;
+  const savingsReal = totalIncomes - totalNet;
 
   // Cards
-  document.getElementById('total-spent').textContent  = fmt(totalGross);
-  document.getElementById('total-net').textContent    = fmt(totalNet);
+  document.getElementById('total-spent').textContent = fmt(totalGross);
+  document.getElementById('total-net').textContent = fmt(totalNet);
   document.getElementById('real-income-display').textContent = fmt(totalIncomes);
 
   document.getElementById('reimbursements-info').textContent =
@@ -272,12 +272,12 @@ async function renderDashboard() {
   categories.forEach(cat => {
     const gross = spentByCat[cat.id] || 0;
     const reimb = reimbByCat[cat.id] || 0;
-    const net   = Math.max(0, gross - reimb);
+    const net = Math.max(0, gross - reimb);
     if (!cat.budget_limit && gross === 0) return;
 
-    const rawPct  = cat.budget_limit ? (net / cat.budget_limit) * 100 : 0;
+    const rawPct = cat.budget_limit ? (net / cat.budget_limit) * 100 : 200;
     const fillPct = Math.min(100, rawPct);
-    const color   = rawPct > 100 ? 'var(--red)' : 'var(--green)';
+    const color = rawPct > 100 ? 'var(--red)' : 'var(--green)';
 
     const reimbNote = reimb > 0 ? `<span class="budget-bar-reimbursed">(−${fmt(reimb)} remb.)</span>` : '';
 
@@ -289,11 +289,11 @@ async function renderDashboard() {
             ${cat.name}
           </div>
           <div class="budget-bar-amounts">
-            <strong>${fmt(net)}</strong>${cat.budget_limit ? ` / ${fmt(cat.budget_limit)}` : ''}
+            <strong>${fmt(net)}</strong>${cat.budget_limit != null ? ` / ${fmt(cat.budget_limit)}` : ''}
             ${reimbNote}
           </div>
         </div>
-        ${cat.budget_limit ? `
+        ${cat.budget_limit != null ? `
         <div class="budget-track">
           <div class="budget-fill" style="width:${fillPct}%;background:${color}"></div>
         </div>` : ''}
@@ -318,13 +318,13 @@ async function renderDashboard() {
 document.getElementById('exp-date').valueAsDate = new Date();
 
 document.getElementById('btn-add-expense').addEventListener('click', async () => {
-  const amount  = parseFloat(document.getElementById('exp-amount').value);
-  const date    = document.getElementById('exp-date').value;
-  const cat_id  = document.getElementById('exp-category').value;
-  const desc    = document.getElementById('exp-desc').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  const date = document.getElementById('exp-date').value;
+  const cat_id = document.getElementById('exp-category').value;
+  const desc = document.getElementById('exp-desc').value.trim();
 
   if (!amount || amount <= 0) return showToast('Montant invalide', 'error');
-  if (!date)   return showToast('Date requise', 'error');
+  if (!date) return showToast('Date requise', 'error');
   if (!cat_id) return showToast('Sélectionnez une catégorie', 'error');
 
   const { error } = await sb.from('expenses').insert({
@@ -394,14 +394,14 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
 });
 
 document.getElementById('btn-add-income').addEventListener('click', async () => {
-  const amount  = parseFloat(document.getElementById('inc-amount').value);
-  const date    = document.getElementById('inc-date').value;
-  const desc    = document.getElementById('inc-desc').value.trim();
-  const type    = document.getElementById('inc-type').value;
-  const cat_id  = document.getElementById('inc-category').value || null;
+  const amount = parseFloat(document.getElementById('inc-amount').value);
+  const date = document.getElementById('inc-date').value;
+  const desc = document.getElementById('inc-desc').value.trim();
+  const type = document.getElementById('inc-type').value;
+  const cat_id = document.getElementById('inc-category').value || null;
 
   if (!amount || amount <= 0) return showToast('Montant invalide', 'error');
-  if (!date)   return showToast('Date requise', 'error');
+  if (!date) return showToast('Date requise', 'error');
   if (type === 'reimbursement' && !cat_id) return showToast('Sélectionnez la catégorie remboursée', 'error');
 
   const { error } = await sb.from('incomes').insert({
@@ -419,8 +419,8 @@ document.getElementById('btn-add-income').addEventListener('click', async () => 
 
 async function renderIncomesList() {
   const allIncomes = await getIncomesForMonth(new Date());
-  const incomes    = allIncomes.filter(i => i.type === 'income' || !i.type);
-  const reimbs     = allIncomes.filter(i => i.type === 'reimbursement');
+  const incomes = allIncomes.filter(i => i.type === 'income' || !i.type);
+  const reimbs = allIncomes.filter(i => i.type === 'reimbursement');
 
   renderIncomeGroup('incomes-list', incomes, 'income');
   renderIncomeGroup('reimbursements-list', reimbs, 'reimbursement');
@@ -431,7 +431,7 @@ function renderIncomeGroup(containerId, items, type) {
   list.innerHTML = '';
   if (!items.length) {
     const icon = type === 'income' ? '💰' : '↩️';
-    const msg  = type === 'income' ? 'Aucun revenu ce mois-ci' : 'Aucun remboursement ce mois-ci';
+    const msg = type === 'income' ? 'Aucun revenu ce mois-ci' : 'Aucun remboursement ce mois-ci';
     list.innerHTML = `<p class="empty-state"><span class="empty-icon">${icon}</span>${msg}</p>`;
     return;
   }
@@ -444,7 +444,7 @@ function renderIncomeGroup(containerId, items, type) {
     const tagClass = type === 'income' ? 'tag-income' : 'tag-reimbursement';
     const tagLabel = type === 'income' ? 'REVENU' : 'REMB.';
     const dotColor = type === 'income' ? 'var(--green)' : (cat?.color || 'var(--blue)');
-    const metaCat  = type === 'reimbursement' && cat ? `${cat.name} · ` : '';
+    const metaCat = type === 'reimbursement' && cat ? `${cat.name} · ` : '';
     div.innerHTML = `
       <div class="expense-cat-dot" style="background:${dotColor}"></div>
       <div class="expense-info">
@@ -484,7 +484,7 @@ function buildColorPicker() {
 document.getElementById('btn-add-category').addEventListener('click', () => {
   editingCategoryId = null;
   document.getElementById('modal-cat-title').textContent = 'Nouvelle catégorie';
-  document.getElementById('cat-name').value   = '';
+  document.getElementById('cat-name').value = '';
   document.getElementById('cat-budget').value = '';
   selectedColor = COLORS[0];
   buildColorPicker();
@@ -496,7 +496,7 @@ document.getElementById('btn-cancel-category').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-category').addEventListener('click', async () => {
-  const name   = document.getElementById('cat-name').value.trim();
+  const name = document.getElementById('cat-name').value.trim();
   const budget = document.getElementById('cat-budget').value;
   // Allow 0 as valid budget (means no limit / tracked but no cap)
   const budget_limit = budget !== '' ? parseFloat(budget) : null;
@@ -505,7 +505,7 @@ document.getElementById('btn-save-category').addEventListener('click', async () 
 
   if (editingCategoryId) {
     await sb.from('categories').update({ name, budget_limit, color: selectedColor })
-            .eq('id', editingCategoryId);
+      .eq('id', editingCategoryId);
     showToast('Catégorie mise à jour ✓');
   } else {
     await sb.from('categories').insert({
@@ -548,7 +548,7 @@ function renderCategories() {
       if (e.target.closest('.btn-delete-cat')) return;
       editingCategoryId = cat.id;
       document.getElementById('modal-cat-title').textContent = 'Modifier';
-      document.getElementById('cat-name').value   = cat.name;
+      document.getElementById('cat-name').value = cat.name;
       document.getElementById('cat-budget').value = cat.budget_limit ?? '';
       selectedColor = cat.color || COLORS[0];
       buildColorPicker();
@@ -604,12 +604,12 @@ async function renderHistory() {
     const data = months[key];
     const totalGross = data.expenses.reduce((a, e) => a + e.amount, 0);
     const totalReimb = data.reimbursements.reduce((a, i) => a + i.amount, 0);
-    const totalNet   = Math.max(0, totalGross - totalReimb);
-    const totalInc   = data.incomes.reduce((a, i) => a + i.amount, 0);
-    const savings    = totalInc - totalNet;
-    const label      = `${MONTHS_FR[parseInt(m)-1]} ${y}`;
-    const savClass   = savings >= 0 ? 'savings-positive' : 'savings-negative';
-    const savLabel   = savings >= 0 ? `Épargne ${fmt(savings)}` : `Déficit ${fmt(Math.abs(savings))}`;
+    const totalNet = Math.max(0, totalGross - totalReimb);
+    const totalInc = data.incomes.reduce((a, i) => a + i.amount, 0);
+    const savings = totalInc - totalNet;
+    const label = `${MONTHS_FR[parseInt(m) - 1]} ${y}`;
+    const savClass = savings >= 0 ? 'savings-positive' : 'savings-negative';
+    const savLabel = savings >= 0 ? `Épargne ${fmt(savings)}` : `Déficit ${fmt(Math.abs(savings))}`;
 
     const card = document.createElement('div');
     card.className = 'history-month-card';
