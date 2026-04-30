@@ -216,8 +216,9 @@ async function renderDashboard() {
   categories.forEach(cat => {
     const spent = byCategory[cat.id] || 0;
     if (!cat.budget_limit && spent === 0) return;
-    const pct = cat.budget_limit ? Math.min(100, (spent / cat.budget_limit) * 100) : 0;
-    const color = pct >= 100 ? 'var(--red)' : 'var(--green)';
+    const rawPct = cat.budget_limit ? (spent / cat.budget_limit) * 100 : 0;
+    const fillPct = Math.min(100, rawPct); // pour la largeur de la barre (max 100%)
+    const color = rawPct > 100 ? 'var(--red)' : 'var(--green)'; // rouge seulement si dépassé
     bars.innerHTML += `
       <div class="budget-bar-item">
         <div class="budget-bar-header">
@@ -231,7 +232,7 @@ async function renderDashboard() {
         </div>
         ${cat.budget_limit ? `
         <div class="budget-track">
-          <div class="budget-fill" style="width:${pct}%;background:${color}"></div>
+          <div class="budget-fill" style="width:${fillPct}%;background:${color}"></div>
         </div>` : ''}
       </div>`;
   });
