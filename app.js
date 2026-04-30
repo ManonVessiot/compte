@@ -499,7 +499,7 @@ document.getElementById('btn-cancel-category').addEventListener('click', () => {
 
 document.getElementById('btn-save-category').addEventListener('click', async () => {
   const name = document.getElementById('cat-name').value.trim();
-  const budget = parseFloat(document.getElementById('cat-budget').value) || null;
+  const budget = parseFloat(document.getElementById('cat-budget').value) || 0;
 
   if (!name) return showToast('Nom requis', 'error');
 
