@@ -586,6 +586,10 @@ async function renderHistory() {
     histEl.innerHTML = '<p class="empty-state"><span class="empty-icon">📅</span>Aucun historique disponible</p>';
     return;
   }
+  if (!dataIncome?.length) {
+    histEl.innerHTML = '<p class="empty-state"><span class="empty-icon">📅</span>Aucun historique incomes disponible</p>';
+    return;
+  }
 
   // Group by month
   const byMonth = {};
