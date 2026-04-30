@@ -185,9 +185,6 @@ document.getElementById('next-month').addEventListener('click', () => {
   if (next <= now) { viewMonth = next; updateMonthDisplay(); renderDashboard(); }
 });
 
-let allBudget = 0;
-let totalIncomesFixed;
-
 // ── DASHBOARD ────────────────────────────────────────────────
 async function renderDashboard() {
   updateMonthDisplay();
@@ -197,7 +194,7 @@ async function renderDashboard() {
   const totalFixed = expenses.filter(e => e.is_fixed).reduce((a, e) => a + e.amount, 0);
   const totalVariable = expenses.filter(e => !e.is_fixed).reduce((a, e) => a + e.amount, 0);
   const total = totalFixed + totalVariable;
-  totalIncomesFixed = incomes.filter(e => e.is_fixed).reduce((a, i) => a + i.amount, 0);
+  const totalIncomesFixed = incomes.filter(e => e.is_recurring).reduce((a, i) => a + i.amount, 0);
   const totalIncomes = incomes.reduce((a, i) => a + i.amount, 0);
   const balance = totalIncomes - total;
 
@@ -220,7 +217,7 @@ async function renderDashboard() {
   });
 
   bars.innerHTML = '';
-  allBudget = 0;
+  let allBudget = 0;
   categories.forEach(cat => {
     allBudget += cat.budget_limit;
     const spent = byCategory[cat.id] || 0;
