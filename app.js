@@ -217,7 +217,7 @@ async function renderDashboard() {
     const spent = byCategory[cat.id] || 0;
     if (!cat.budget_limit && spent === 0) return;
     const pct = cat.budget_limit ? Math.min(100, (spent / cat.budget_limit) * 100) : 0;
-    const color = pct > 100 ? 'var(--red)' : pct > 75 ? 'var(--accent)' : 'var(--green)';
+    const color = pct >= 100 ? 'var(--red)' : pct > 75 ? 'var(--accent)' : 'var(--green)';
     bars.innerHTML += `
       <div class="budget-bar-item">
         <div class="budget-bar-header">
