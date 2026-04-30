@@ -580,6 +580,8 @@ async function renderHistory() {
   // Fetch all expenses
   const { data } = await sb.from('expenses')
     .select('*').eq('user_id', currentUser.id).order('date');
+  const { dataIncome } = await sb.from('incomes')
+    .select('*').eq('user_id', currentUser.id).order('date');
   if (!data?.length) {
     histEl.innerHTML = '<p class="empty-state"><span class="empty-icon">📅</span>Aucun historique disponible</p>';
     return;
@@ -593,6 +595,13 @@ async function renderHistory() {
     byMonth[key].push(e);
   });
 
+  const byMonthIncome = {};
+  dataIncome.forEach(e => {
+    const key = e.date.slice(0, 7); // YYYY-MM
+    if (!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push(e);
+  });
+
   histEl.innerHTML = '';
   const keys = Object.keys(byMonth).sort().reverse();
   keys.forEach(key => {
@@ -601,6 +610,8 @@ async function renderHistory() {
     const total = exps.reduce((a, e) => a + e.amount, 0);
     const fixed = exps.filter(e => e.is_fixed).reduce((a, e) => a + e.amount, 0);
     const variable = total - fixed;
+    const income = byMonthIncome[key] || 0;
+    const saving = income - total;
     const label = `${MONTHS_FR[parseInt(m) - 1]} ${y}`;
 
     const card = document.createElement('div');
@@ -618,6 +629,10 @@ async function renderHistory() {
         <div class="history-stat">
           <div class="history-stat-label">Variables</div>
           <div class="history-stat-val">${fmt(variable)}</div>
+        </div>
+        <div class="history-stat">
+          <div class="history-stat-label">Saving</div>
+          <div class="history-stat-val">${fmt(saving)}</div>
         </div>
         <div class="history-stat">
           <div class="history-stat-label">Nb. dépenses</div>
