@@ -201,6 +201,7 @@ async function renderDashboard() {
   document.getElementById('total-spent').textContent = fmt(total);
   document.getElementById('total-fixed').textContent = fmt(totalFixed);
   document.getElementById('total-incomes').textContent = fmt(totalIncomes);
+  document.getElementById('total-incomes-fixed').textContent = "fixe : " + fmt(totalIncomesFixed);
 
   const balanceEl = document.getElementById('total-savings');
   balanceEl.textContent = fmt(balance);
