@@ -530,9 +530,7 @@ function renderCategories() {
     const card = document.createElement('div');
     card.className = 'category-card';
     card.style.borderLeft = `3px solid ${cat.color || '#666'}`;
-    const budgetDisplay = cat.budget_limit === 0
-      ? '<span style="color:var(--text-muted);font-size:.9rem">Sans plafond</span>'
-      : cat.budget_limit ? fmt(cat.budget_limit) : '—';
+    const budgetDisplay = cat.budget_limit != null ? fmt(cat.budget_limit) : '—';
     card.innerHTML = `
       <div class="cat-card-header">
         <div class="cat-card-name">
