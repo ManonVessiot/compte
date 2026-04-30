@@ -80,6 +80,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.getElementById(`view-${view}`).classList.add('active');
     if (view === 'dashboard') renderDashboard();
     if (view === 'expenses') { renderExpenseList(); populateCategorySelects(); }
+    if (view === 'incomes') { renderIncomesList(); }
     if (view === 'fixed') renderFixedCharges();
     if (view === 'categories') renderCategories();
     if (view === 'history') renderHistory();
@@ -188,18 +189,21 @@ document.getElementById('next-month').addEventListener('click', () => {
 async function renderDashboard() {
   updateMonthDisplay();
   const expenses = await getExpensesForMonth(viewMonth);
+  const incomes = await getIncomesForMonth(viewMonth);
 
   const totalFixed = expenses.filter(e => e.is_fixed).reduce((a, e) => a + e.amount, 0);
   const totalVariable = expenses.filter(e => !e.is_fixed).reduce((a, e) => a + e.amount, 0);
   const total = totalFixed + totalVariable;
-  const totalBudget = categories.reduce((a, c) => a + (c.budget_limit || 0), 0);
-  const savings = Math.max(0, totalBudget - total);
+  const totalIncomes = incomes.reduce((a, i) => a + i.amount, 0);
+  const balance = totalIncomes - total;
 
   document.getElementById('total-spent').textContent = fmt(total);
   document.getElementById('total-fixed').textContent = fmt(totalFixed);
-  document.getElementById('total-variable').textContent = fmt(totalVariable);
-  document.getElementById('total-savings').textContent = fmt(savings);
-  document.getElementById('total-budget-info').textContent = totalBudget ? `Budget : ${fmt(totalBudget)}` : '';
+  document.getElementById('total-incomes').textContent = fmt(totalIncomes);
+
+  const balanceEl = document.getElementById('total-savings');
+  balanceEl.textContent = fmt(balance);
+  balanceEl.style.color = balance >= 0 ? 'var(--green)' : 'var(--red)';
 
   // Budget bars
   const bars = document.getElementById('budget-bars');
@@ -318,6 +322,80 @@ document.getElementById('btn-add-expense').addEventListener('click', async () =>
   document.getElementById('exp-fixed').checked = false;
   renderExpenseList();
 });
+
+// ── INCOMES ──────────────────────────────────────────────────
+async function getIncomesForMonth(date) {
+  const { from, to } = monthRange(date);
+  const { data } = await sb.from('incomes')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .gte('date', from)
+    .lte('date', to)
+    .order('date', { ascending: false });
+  return data || [];
+}
+
+document.getElementById('inc-date').valueAsDate = new Date();
+
+document.getElementById('btn-add-income').addEventListener('click', async () => {
+  const amount = parseFloat(document.getElementById('inc-amount').value);
+  const date = document.getElementById('inc-date').value;
+  const desc = document.getElementById('inc-desc').value.trim();
+  const is_recurring = document.getElementById('inc-recurring').checked;
+
+  if (!amount || amount <= 0) return showToast('Montant invalide', 'error');
+  if (!date) return showToast('Date requise', 'error');
+
+  const { error } = await sb.from('incomes').insert({
+    user_id: currentUser.id,
+    amount, date,
+    description: desc || null,
+    is_recurring
+  });
+
+  if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+
+  showToast('Revenu enregistré ✓');
+  document.getElementById('inc-amount').value = '';
+  document.getElementById('inc-desc').value = '';
+  document.getElementById('inc-recurring').checked = false;
+  renderIncomesList();
+});
+
+async function renderIncomesList() {
+  const incomes = await getIncomesForMonth(new Date());
+  const list = document.getElementById('incomes-list');
+  list.innerHTML = '';
+  if (!incomes.length) {
+    list.innerHTML = '<p class="empty-state"><span class="empty-icon">💰</span>Aucun revenu ce mois-ci</p>';
+    return;
+  }
+  incomes.forEach(inc => {
+    const div = document.createElement('div');
+    div.className = 'expense-item';
+    const d = new Date(inc.date + 'T00:00:00');
+    const dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    div.innerHTML = `
+      <div class="expense-cat-dot" style="background:var(--green)"></div>
+      <div class="expense-info">
+        <div class="expense-desc">${inc.description || 'Revenu'}</div>
+        <div class="expense-meta">
+          ${dateStr}
+          ${inc.is_recurring ? '<span class="tag-fixed" style="background:rgba(78,203,123,0.15);color:var(--green)">RÉCURRENT</span>' : ''}
+        </div>
+      </div>
+      <div class="expense-amount" style="color:var(--green)">+${fmt(inc.amount)}</div>
+      <button class="btn-delete-exp" data-id="${inc.id}" title="Supprimer">×</button>
+    `;
+    div.querySelector('.btn-delete-exp').addEventListener('click', async () => {
+      if (!confirm('Supprimer ce revenu ?')) return;
+      await sb.from('incomes').delete().eq('id', inc.id);
+      showToast('Revenu supprimé');
+      renderIncomesList();
+    });
+    list.appendChild(div);
+  });
+}
 
 // ── FIXED CHARGES ────────────────────────────────────────────
 document.getElementById('btn-add-fixed').addEventListener('click', () => {
