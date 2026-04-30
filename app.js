@@ -199,11 +199,8 @@ async function renderDashboard() {
   const balance = totalIncomes - total;
 
   document.getElementById('total-spent').textContent = fmt(total);
-  document.getElementById('total-budget-info').textContent = "/ " + fmt(allBudget);
   document.getElementById('total-fixed').textContent = fmt(totalFixed);
   document.getElementById('total-incomes').textContent = fmt(totalIncomes);
-
-  document.getElementById('total-saving-planned').textContent = "/ " + fmt(totalIncomesFixed - allBudget);
 
   const balanceEl = document.getElementById('total-savings');
   balanceEl.textContent = fmt(balance);
