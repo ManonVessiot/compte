@@ -45,8 +45,7 @@ document.getElementById('btn-google-login').addEventListener('click', async () =
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
   await sb.auth.signOut();
-  showScreen('auth');
-  currentUser = null;
+  window.location.href = window.location.pathname; // ← recharge sans le hash
 });
 
 let appInitialized = false; // ← ajoute ça près des autres variables d'état
