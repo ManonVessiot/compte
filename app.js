@@ -8,22 +8,22 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── STATE ────────────────────────────────────────────────────
 let currentUser = null;
-let categories  = [];
-let viewMonth   = new Date(); // month currently viewed
+let categories = [];
+let viewMonth = new Date(); // month currently viewed
 viewMonth.setDate(1);
 
 const COLORS = [
-  '#d4a853','#e05c5c','#4ecb7b','#5b9cf6',
-  '#9b72f5','#f97316','#06b6d4','#ec4899',
-  '#a3e635','#fb923c','#f43f5e','#8b5cf6'
+  '#d4a853', '#e05c5c', '#4ecb7b', '#5b9cf6',
+  '#9b72f5', '#f97316', '#06b6d4', '#ec4899',
+  '#a3e635', '#fb923c', '#f43f5e', '#8b5cf6'
 ];
 let selectedColor = COLORS[0];
 let editingCategoryId = null;
 
 // ── DOM REFS ─────────────────────────────────────────────────
-const authScreen  = document.getElementById('auth-screen');
-const appScreen   = document.getElementById('app-screen');
-const toast       = document.getElementById('toast');
+const authScreen = document.getElementById('auth-screen');
+const appScreen = document.getElementById('app-screen');
+const toast = document.getElementById('toast');
 
 // ── TOAST ────────────────────────────────────────────────────
 let toastTimer;
@@ -49,13 +49,20 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   currentUser = null;
 });
 
+let appInitialized = false; // ← ajoute ça près des autres variables d'état
+
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
-    await initApp();
+    if (!appInitialized) {        // ← n'init qu'une seule fois
+      appInitialized = true;
+      await initApp();
+    }
     showScreen('app');
   } else {
+    appInitialized = false;       // ← reset au logout
     showScreen('auth');
+    currentUser = null;
   }
 });
 
@@ -74,9 +81,9 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.getElementById(`view-${view}`).classList.add('active');
     if (view === 'dashboard') renderDashboard();
     if (view === 'expenses') { renderExpenseList(); populateCategorySelects(); }
-    if (view === 'fixed')    renderFixedCharges();
+    if (view === 'fixed') renderFixedCharges();
     if (view === 'categories') renderCategories();
-    if (view === 'history')  renderHistory();
+    if (view === 'history') renderHistory();
   });
 });
 
@@ -84,7 +91,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 async function initApp() {
   // User info
   const meta = currentUser.user_metadata;
-  document.getElementById('user-name').textContent  = meta.full_name || meta.name || 'Utilisateur';
+  document.getElementById('user-name').textContent = meta.full_name || meta.name || 'Utilisateur';
   document.getElementById('user-email').textContent = currentUser.email || '';
   const avatar = document.getElementById('user-avatar');
   if (meta.avatar_url || meta.picture) {
@@ -115,7 +122,7 @@ function getCatById(id) { return categories.find(c => c.id === id) || null; }
 function monthRange(date) {
   const y = date.getFullYear(), m = date.getMonth();
   const from = new Date(y, m, 1).toISOString().slice(0, 10);
-  const to   = new Date(y, m + 1, 0).toISOString().slice(0, 10);
+  const to = new Date(y, m + 1, 0).toISOString().slice(0, 10);
   return { from, to };
 }
 
@@ -131,13 +138,20 @@ async function getExpensesForMonth(date) {
 }
 
 async function seedDefaultCategories() {
+  // Double-vérification directe en base pour éviter les doublons
+  const { count } = await sb.from('categories')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', currentUser.id);
+
+  if (count > 0) return; // déjà fait, on sort
+
   const defaults = [
-    { name: 'Logement',       color: '#5b9cf6', budget_limit: 800 },
-    { name: 'Alimentation',   color: '#4ecb7b', budget_limit: 400 },
-    { name: 'Transport',      color: '#d4a853', budget_limit: 150 },
-    { name: 'Loisirs',        color: '#9b72f5', budget_limit: 100 },
-    { name: 'Santé',          color: '#e05c5c', budget_limit: 50  },
-    { name: 'Abonnements',    color: '#06b6d4', budget_limit: 80  },
+    { name: 'Logement', color: '#5b9cf6', budget_limit: 800 },
+    { name: 'Alimentation', color: '#4ecb7b', budget_limit: 400 },
+    { name: 'Transport', color: '#d4a853', budget_limit: 150 },
+    { name: 'Loisirs', color: '#9b72f5', budget_limit: 100 },
+    { name: 'Santé', color: '#e05c5c', budget_limit: 50 },
+    { name: 'Abonnements', color: '#06b6d4', budget_limit: 80 },
   ];
   const rows = defaults.map(d => ({ ...d, user_id: currentUser.id }));
   await sb.from('categories').insert(rows);
@@ -145,8 +159,8 @@ async function seedDefaultCategories() {
 }
 
 // ── MONTH NAV ────────────────────────────────────────────────
-const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
-                   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MONTHS_FR = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 function updateMonthDisplay() {
   const label = `${MONTHS_FR[viewMonth.getMonth()]} ${viewMonth.getFullYear()}`;
@@ -162,7 +176,7 @@ document.getElementById('prev-month').addEventListener('click', () => {
 document.getElementById('next-month').addEventListener('click', () => {
   const next = new Date(viewMonth);
   next.setMonth(next.getMonth() + 1);
-  const now  = new Date(); now.setDate(1);
+  const now = new Date(); now.setDate(1);
   if (next <= now) { viewMonth = next; updateMonthDisplay(); renderDashboard(); }
 });
 
@@ -171,16 +185,16 @@ async function renderDashboard() {
   updateMonthDisplay();
   const expenses = await getExpensesForMonth(viewMonth);
 
-  const totalFixed    = expenses.filter(e => e.is_fixed).reduce((a, e) => a + e.amount, 0);
+  const totalFixed = expenses.filter(e => e.is_fixed).reduce((a, e) => a + e.amount, 0);
   const totalVariable = expenses.filter(e => !e.is_fixed).reduce((a, e) => a + e.amount, 0);
-  const total         = totalFixed + totalVariable;
-  const totalBudget   = categories.reduce((a, c) => a + (c.budget_limit || 0), 0);
-  const savings       = Math.max(0, totalBudget - total);
+  const total = totalFixed + totalVariable;
+  const totalBudget = categories.reduce((a, c) => a + (c.budget_limit || 0), 0);
+  const savings = Math.max(0, totalBudget - total);
 
-  document.getElementById('total-spent').textContent    = fmt(total);
-  document.getElementById('total-fixed').textContent    = fmt(totalFixed);
+  document.getElementById('total-spent').textContent = fmt(total);
+  document.getElementById('total-fixed').textContent = fmt(totalFixed);
   document.getElementById('total-variable').textContent = fmt(totalVariable);
-  document.getElementById('total-savings').textContent  = fmt(savings);
+  document.getElementById('total-savings').textContent = fmt(savings);
   document.getElementById('total-budget-info').textContent = totalBudget ? `Budget : ${fmt(totalBudget)}` : '';
 
   // Budget bars
@@ -275,14 +289,14 @@ function expenseItem(e, withDelete = false) {
 document.getElementById('exp-date').valueAsDate = new Date();
 
 document.getElementById('btn-add-expense').addEventListener('click', async () => {
-  const amount   = parseFloat(document.getElementById('exp-amount').value);
-  const date     = document.getElementById('exp-date').value;
-  const cat_id   = document.getElementById('exp-category').value;
-  const desc     = document.getElementById('exp-desc').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  const date = document.getElementById('exp-date').value;
+  const cat_id = document.getElementById('exp-category').value;
+  const desc = document.getElementById('exp-desc').value.trim();
   const is_fixed = document.getElementById('exp-fixed').checked;
 
   if (!amount || amount <= 0) return showToast('Montant invalide', 'error');
-  if (!date)   return showToast('Date requise', 'error');
+  if (!date) return showToast('Date requise', 'error');
   if (!cat_id) return showToast('Sélectionnez une catégorie', 'error');
 
   const { error } = await sb.from('expenses').insert({
@@ -311,12 +325,12 @@ document.getElementById('btn-cancel-fixed').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-fixed').addEventListener('click', async () => {
-  const name   = document.getElementById('fix-name').value.trim();
+  const name = document.getElementById('fix-name').value.trim();
   const amount = parseFloat(document.getElementById('fix-amount').value);
   const cat_id = document.getElementById('fix-category').value;
-  const day    = parseInt(document.getElementById('fix-day').value) || 1;
+  const day = parseInt(document.getElementById('fix-day').value) || 1;
 
-  if (!name)   return showToast('Nom requis', 'error');
+  if (!name) return showToast('Nom requis', 'error');
   if (!amount || amount <= 0) return showToast('Montant invalide', 'error');
 
   const { error } = await sb.from('fixed_charges').insert({
@@ -401,14 +415,14 @@ document.getElementById('btn-cancel-category').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-category').addEventListener('click', async () => {
-  const name   = document.getElementById('cat-name').value.trim();
+  const name = document.getElementById('cat-name').value.trim();
   const budget = parseFloat(document.getElementById('cat-budget').value) || null;
 
   if (!name) return showToast('Nom requis', 'error');
 
   if (editingCategoryId) {
     await sb.from('categories').update({ name, budget_limit: budget, color: selectedColor })
-            .eq('id', editingCategoryId);
+      .eq('id', editingCategoryId);
     showToast('Catégorie mise à jour ✓');
   } else {
     await sb.from('categories').insert({
@@ -495,10 +509,10 @@ async function renderHistory() {
   keys.forEach(key => {
     const [y, m] = key.split('-');
     const exps = byMonth[key];
-    const total = exps.reduce((a,e) => a + e.amount, 0);
-    const fixed = exps.filter(e=>e.is_fixed).reduce((a,e)=>a+e.amount,0);
+    const total = exps.reduce((a, e) => a + e.amount, 0);
+    const fixed = exps.filter(e => e.is_fixed).reduce((a, e) => a + e.amount, 0);
     const variable = total - fixed;
-    const label = `${MONTHS_FR[parseInt(m)-1]} ${y}`;
+    const label = `${MONTHS_FR[parseInt(m) - 1]} ${y}`;
 
     const card = document.createElement('div');
     card.className = 'history-month-card';
