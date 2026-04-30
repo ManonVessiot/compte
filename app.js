@@ -549,7 +549,7 @@ function renderCategories() {
       editingCategoryId = cat.id;
       document.getElementById('modal-cat-title').textContent = 'Modifier la catégorie';
       document.getElementById('cat-name').value = cat.name;
-      document.getElementById('cat-budget').value = cat.budget_limit || '';
+      document.getElementById('cat-budget').value = cat.budget_limit != null ? cat.budget_limit : '';
       selectedColor = cat.color || COLORS[0];
       buildColorPicker();
       document.getElementById('modal-category').classList.remove('hidden');
@@ -628,7 +628,8 @@ async function renderHistory() {
 
 // ── UTILS ─────────────────────────────────────────────────────
 function fmt(n) {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n || 0);
+  res = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n || 0);
+  return res != null ? res : 0;
 }
 
 function populateCategorySelects() {
