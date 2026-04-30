@@ -136,7 +136,11 @@ async function getExpensesForMonth(date) {
   return data || [];
 }
 
+let categoriesInitialized = false;
+
 async function seedDefaultCategories() {
+  if (categoriesInitialized) return; // déjà fait, on sort
+
   // Double-vérification directe en base pour éviter les doublons
   const { count } = await sb.from('categories')
     .select('*', { count: 'exact', head: true })
@@ -154,6 +158,7 @@ async function seedDefaultCategories() {
   ];
   const rows = defaults.map(d => ({ ...d, user_id: currentUser.id }));
   await sb.from('categories').insert(rows);
+  categoriesInitialized = true;
   await loadCategories();
 }
 
