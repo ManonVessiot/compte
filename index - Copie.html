@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mes Finances — Suivi des dépenses</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ── AUTH SCREEN ─────────────────────────────────────────── -->
+  <div id="auth-screen" class="screen active">
+    <div class="auth-bg">
+      <div class="auth-blob blob-1"></div>
+      <div class="auth-blob blob-2"></div>
+      <div class="auth-blob blob-3"></div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">Finsave</span>
+      </div>
+      <h1 class="auth-title">Reprenez<br /><em>le contrôle</em></h1>
+      <p class="auth-subtitle">Suivez vos dépenses, fixez vos objectifs, construisez votre épargne.</p>
+      <button id="btn-google-login" class="btn-google">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4"
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path fill="#34A853"
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          <path fill="#FBBC05"
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+          <path fill="#EA4335"
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+        </svg>
+        Continuer avec Google
+      </button>
+      <p class="auth-note">Vos données sont privées et sécurisées.</p>
+    </div>
+  </div>
+
+  <!-- ── MAIN APP ────────────────────────────────────────────── -->
+  <div id="app-screen" class="screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">Finsave</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-view="dashboard">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+          Tableau de bord
+        </a>
+        <a class="nav-item" data-view="expenses">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Ajouter une dépense
+        </a>
+        <a class="nav-item" data-view="incomes">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="12" y1="19" x2="12" y2="5" />
+            <polyline points="5 12 12 5 19 12" />
+          </svg>
+          Revenus
+        </a>
+        <a class="nav-item" data-view="fixed">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          </svg>
+          Charges fixes
+        </a>
+        <a class="nav-item" data-view="categories">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 2v20M2 12h20" />
+          </svg>
+          Catégories & budgets
+        </a>
+        <a class="nav-item" data-view="history">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          Historique
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info" id="sidebar-user">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <div class="user-details">
+            <span id="user-name">Chargement...</span>
+            <small id="user-email"></small>
+          </div>
+        </div>
+        <button id="btn-logout" class="btn-logout" title="Se déconnecter">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- ── DASHBOARD ── -->
+      <section id="view-dashboard" class="view active">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Tableau de bord</h2>
+            <p class="view-sub" id="dashboard-month-label">Chargement...</p>
+          </div>
+          <div class="month-nav">
+            <button id="prev-month" class="btn-month">‹</button>
+            <span id="current-month-display" class="month-display"></span>
+            <button id="next-month" class="btn-month">›</button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="summary-grid">
+          <div class="summary-card card-total">
+            <div class="card-label">Dépenses totales</div>
+            <div class="card-amount" id="total-spent">0 €</div>
+            <div class="card-sub" id="total-budget-info"></div>
+          </div>
+          <div class="summary-card card-fixed">
+            <div class="card-label">Charges fixes</div>
+            <div class="card-amount" id="total-fixed">0 €</div>
+            <div class="card-sub">Ce mois-ci</div>
+          </div>
+          <div class="summary-card card-variable">
+            <div class="card-label">Revenus</div>
+            <div class="card-amount" id="total-incomes">0 €</div>
+            <div class="card-sub" id="total-incomes-fixed">Ce mois-ci</div>
+          </div>
+          <div class="summary-card card-savings">
+            <div class="card-label">Balance</div>
+            <div class="card-amount" id="total-savings">0 €</div>
+            <div class="card-sub" id="total-saving-planned">Revenus − Dépenses</div>
+          </div>
+        </div>
+
+        <!-- Budget bars by category -->
+        <div class="section-title">Budgets par catégorie</div>
+        <div id="budget-bars" class="budget-bars"></div>
+
+        <!-- Recent expenses -->
+        <div class="section-title">Dernières dépenses</div>
+        <div id="recent-expenses" class="expense-list"></div>
+      </section>
+
+      <!-- ── ADD EXPENSE ── -->
+      <section id="view-expenses" class="view">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Ajouter une dépense</h2>
+            <p class="view-sub">Enregistrez une nouvelle dépense</p>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Montant (€)</label>
+              <input type="number" id="exp-amount" placeholder="0.00" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="exp-date" />
+            </div>
+            <div class="form-group">
+              <label>Catégorie</label>
+              <select id="exp-category">
+                <option value="">Sélectionner...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input type="text" id="exp-desc" placeholder="Ex: Courses Lidl" />
+            </div>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="exp-fixed" />
+            <label for="exp-fixed">Charge fixe récurrente</label>
+          </div>
+          <button id="btn-add-expense" class="btn-primary">Enregistrer la dépense</button>
+        </div>
+
+        <div class="section-title" style="margin-top:2rem">Ce mois-ci</div>
+        <div id="all-expenses-list" class="expense-list"></div>
+      </section>
+
+      <!-- ── REVENUS ── -->
+      <section id="view-incomes" class="view">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Revenus</h2>
+            <p class="view-sub">Salaire, freelance, autres entrées...</p>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Montant (€)</label>
+              <input type="number" id="inc-amount" placeholder="0.00" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="inc-date" />
+            </div>
+            <div class="form-group" style="grid-column: 1/-1">
+              <label>Description</label>
+              <input type="text" id="inc-desc" placeholder="Ex: Salaire novembre" />
+            </div>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="inc-recurring" />
+            <label for="inc-recurring">Revenu récurrent (mensuel)</label>
+          </div>
+          <button id="btn-add-income" class="btn-primary">Enregistrer le revenu</button>
+        </div>
+
+        <div class="section-title" style="margin-top:2rem">Ce mois-ci</div>
+        <div id="incomes-list" class="expense-list"></div>
+      </section>
+
+      <!-- ── FIXED CHARGES ── -->
+      <section id="view-fixed" class="view">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Charges fixes</h2>
+            <p class="view-sub">Loyer, abonnements, assurances...</p>
+          </div>
+          <button id="btn-add-fixed" class="btn-primary-sm">+ Ajouter</button>
+        </div>
+        <div id="fixed-charges-list" class="expense-list"></div>
+
+        <!-- Modal add fixed -->
+        <div id="modal-fixed" class="modal hidden">
+          <div class="modal-card">
+            <h3>Nouvelle charge fixe</h3>
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" id="fix-name" placeholder="Ex: Loyer" />
+            </div>
+            <div class="form-group">
+              <label>Montant mensuel (€)</label>
+              <input type="number" id="fix-amount" placeholder="0.00" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Catégorie</label>
+              <select id="fix-category">
+                <option value="">Sélectionner...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Jour du prélèvement</label>
+              <input type="number" id="fix-day" placeholder="1-31" min="1" max="31" />
+            </div>
+            <div class="modal-actions">
+              <button id="btn-cancel-fixed" class="btn-secondary">Annuler</button>
+              <button id="btn-save-fixed" class="btn-primary">Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── CATEGORIES ── -->
+      <section id="view-categories" class="view">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Catégories & Budgets</h2>
+            <p class="view-sub">Définissez vos plafonds mensuels</p>
+          </div>
+          <button id="btn-add-category" class="btn-primary-sm">+ Ajouter</button>
+        </div>
+        <div id="categories-list" class="categories-grid"></div>
+
+        <!-- Modal add category -->
+        <div id="modal-category" class="modal hidden">
+          <div class="modal-card">
+            <h3 id="modal-cat-title">Nouvelle catégorie</h3>
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" id="cat-name" placeholder="Ex: Alimentation" />
+            </div>
+            <div class="form-group">
+              <label>Budget mensuel (€) <small>optionnel</small></label>
+              <input type="number" id="cat-budget" placeholder="0" step="1" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Couleur</label>
+              <div class="color-picker" id="color-picker"></div>
+            </div>
+            <div class="modal-actions">
+              <button id="btn-cancel-category" class="btn-secondary">Annuler</button>
+              <button id="btn-save-category" class="btn-primary">Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── HISTORY ── -->
+      <section id="view-history" class="view">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Historique</h2>
+            <p class="view-sub">Vos bilans mensuels passés</p>
+          </div>
+        </div>
+        <div id="history-list" class="history-grid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
