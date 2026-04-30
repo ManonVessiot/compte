@@ -213,7 +213,9 @@ async function renderDashboard() {
   });
 
   bars.innerHTML = '';
+  allBudget = 0;
   categories.forEach(cat => {
+    allBudget += cat.budget_limit;
     const spent = byCategory[cat.id] || 0;
     //if (!cat.budget_limit && spent === 0) return;
     const rawPct = cat.budget_limit ? (spent / cat.budget_limit) * 100 : spent > 0 ? 200 : 0;
@@ -237,6 +239,8 @@ async function renderDashboard() {
       </div>`;
   });
   if (!bars.innerHTML) bars.innerHTML = '<p class="empty-state"><span class="empty-icon">🎯</span>Définissez des budgets dans "Catégories & Budgets"</p>';
+
+  document.getElementById('total-budget-info').textContent = "/ " + fmt(allBudget);
 
   // Recent expenses
   const recent = document.getElementById('recent-expenses');
