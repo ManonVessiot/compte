@@ -586,10 +586,6 @@ async function renderHistory() {
     histEl.innerHTML = '<p class="empty-state"><span class="empty-icon">📅</span>Aucun historique disponible</p>';
     return;
   }
-  if (!dataIncome?.length) {
-    histEl.innerHTML = '<p class="empty-state"><span class="empty-icon">📅</span>Aucun historique incomes disponible</p>';
-    return;
-  }
 
   // Group by month
   const byMonth = {};
@@ -602,8 +598,8 @@ async function renderHistory() {
   const byMonthIncome = {};
   dataIncome.forEach(e => {
     const key = e.date.slice(0, 7); // YYYY-MM
-    if (!byMonth[key]) byMonth[key] = [];
-    byMonth[key].push(e);
+    if (!byMonthIncome[key]) byMonthIncome[key] = [];
+    byMonthIncome[key].push(e);
   });
 
   histEl.innerHTML = '';
