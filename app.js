@@ -186,6 +186,7 @@ document.getElementById('next-month').addEventListener('click', () => {
 });
 
 let allBudget = 0;
+let totalIncomesFixed;
 
 // ── DASHBOARD ────────────────────────────────────────────────
 async function renderDashboard() {
@@ -196,7 +197,7 @@ async function renderDashboard() {
   const totalFixed = expenses.filter(e => e.is_fixed).reduce((a, e) => a + e.amount, 0);
   const totalVariable = expenses.filter(e => !e.is_fixed).reduce((a, e) => a + e.amount, 0);
   const total = totalFixed + totalVariable;
-  const totalIncomesFixed = incomes.filter(e => e.is_fixed).reduce((a, i) => a + i.amount, 0);
+  totalIncomesFixed = incomes.filter(e => e.is_fixed).reduce((a, i) => a + i.amount, 0);
   const totalIncomes = incomes.reduce((a, i) => a + i.amount, 0);
   const balance = totalIncomes - total;
 
@@ -245,6 +246,8 @@ async function renderDashboard() {
       </div>`;
   });
   if (!bars.innerHTML) bars.innerHTML = '<p class="empty-state"><span class="empty-icon">🎯</span>Définissez des budgets dans "Catégories & Budgets"</p>';
+  document.getElementById('total-saving-planned').textContent = "/ " + fmt(totalIncomesFixed - allBudget);
+  document.getElementById('total-budget-info').textContent = "/ " + fmt(allBudget);
 
   // Recent expenses
   const recent = document.getElementById('recent-expenses');
